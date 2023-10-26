@@ -1,0 +1,16 @@
+[package]
+name = "busstop"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.74"
+log = "0.4.20"
+tokio = { version = "1.33.0", features = ["sync"] }
+
+
+[dev-dependencies]
+tokio = { version = "1.33.0", features = ["full"] }
+simple_logger = "4.2.0"
