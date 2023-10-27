@@ -28,8 +28,8 @@ impl Busstop {
             .clone()
     }
 
-    pub async fn register_command<T>(&self, handler: impl CommandHandler + 'static) -> &Self {
-        let name = std::any::type_name::<T>().to_string();
+    pub async fn register_command<C>(&self, handler: impl CommandHandler + 'static) -> &Self {
+        let name = std::any::type_name::<C>().to_string();
         let mut lock = self.commands.write().await;
 
         log::debug!(target: LOG_TARGET, "registered command handler {:?} for  {:?}", handler.command_handler_name(), &name);
@@ -37,6 +37,13 @@ impl Busstop {
         lock.insert(name, Box::new(handler));
 
         self
+    }
+
+    pub async fn command_has_handler<C>(&self) -> bool {
+        let name = std::any::type_name::<C>().to_string();
+        let lock = self.commands.read().await;
+
+        lock.contains_key(&name)
     }
 
     pub async fn register_query<T>(&self, handler: impl QueryHandler + 'static) -> &Self {
@@ -48,6 +55,13 @@ impl Busstop {
         lock.insert(name, Box::new(handler));
 
         self
+    }
+
+    pub async fn query_has_handler<Q>(&self) -> bool {
+        let name = std::any::type_name::<Q>().to_string();
+        let lock = self.queries.read().await;
+
+        lock.contains_key(&name)
     }
 
     pub async fn dispatch_command<T: Send + Sync + 'static>(&self, command: T) {
