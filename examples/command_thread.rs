@@ -3,17 +3,23 @@ use simple_logger::SimpleLogger;
 
 #[tokio::main]
 async fn main() {
+    // For logging purposes
     SimpleLogger::new().init().unwrap();
 
+    // 1. Register command handler
+    //    In this case for the command "CreateUser"
     CreateUser::command_handler::<CreateUserHandler>().await;
 
-    let cmd = CreateUser {
-        email: "Hello".to_string(),
-    };
+    // 2. We are dispatching the command from another thread
+    let t2 = std::thread::spawn(|| async {
+        let cmd = CreateUser {
+            email: "Hello".to_string(),
+        };
 
-    cmd.dispatch_command().await;
+        cmd.dispatch_command().await;
+    });
 
-    println!("command bus");
+    _ = t2.join().unwrap().await;
 }
 
 #[derive(Debug)]
