@@ -1,5 +1,6 @@
 use std::any::Any;
 
+#[derive(Debug)]
 pub struct DispatchedCommand(Box<dyn Any + Send + Sync>);
 
 impl DispatchedCommand {
