@@ -11,7 +11,7 @@ async fn main() {
 
     // 2. Create an instance of the command
     let cmd = CreateUser {
-        email: "Hello".to_string(),
+        email: "james@james.com".to_string(),
     };
 
     // 3. Dispatch the command
@@ -35,6 +35,7 @@ struct CreateUserHandler;
 #[busstop::async_trait]
 impl CommandHandler for CreateUserHandler {
     async fn handle_command(&self, dc: busstop::DispatchedCommand) {
+        // 8. Get the "CreateUser" command instance
         let command = dc.the_command::<CreateUser>();
 
         println!("handling create user: {:?}", command.unwrap().email);

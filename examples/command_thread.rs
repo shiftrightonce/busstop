@@ -13,7 +13,7 @@ async fn main() {
     // 2. We are dispatching the command from another thread
     let t2 = std::thread::spawn(|| async {
         let cmd = CreateUser {
-            email: "Hello".to_string(),
+            email: "example@example.com".to_string(),
         };
 
         cmd.dispatch_command().await;

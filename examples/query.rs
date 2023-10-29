@@ -7,7 +7,7 @@ async fn main() {
     SimpleLogger::new().init().unwrap();
 
     // 1. Register query handler
-    SumOfQuery::query_handler::<HandlerSumOfQuery>().await;
+    SumOfQuery::query_handler::<HandleSumOfQuery>().await;
 
     // 2. Create an instance of the query
     let query = SumOfQuery {
@@ -34,12 +34,13 @@ impl DispatchableQuery for SumOfQuery {}
 
 // 7. Create a Handler struct
 #[derive(Default)]
-struct HandlerSumOfQuery;
+struct HandleSumOfQuery;
 
 // 8. Implement "QueryHandler" trait for "HandleSumOfQuery"
 #[busstop::async_trait]
-impl QueryHandler for HandlerSumOfQuery {
+impl QueryHandler for HandleSumOfQuery {
     async fn handle_query(&self, dq: busstop::DispatchedQuery) -> DispatchedQuery {
+        // 9. Get the "SumOfQuery" instance
         let query = dq.the_query::<SumOfQuery>();
 
         let sum = if let Some(subject) = query {
@@ -51,7 +52,7 @@ impl QueryHandler for HandlerSumOfQuery {
 
         println!("handling 'sum of query'. sum: {:?}", &sum);
 
-        // 9. Make sure to set the value to return
+        // 10. Make sure to set the value to return
         dq.set_value(sum);
 
         dq

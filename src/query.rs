@@ -6,8 +6,12 @@ pub use query_handler::QueryHandler;
 
 use crate::Busstop;
 
+/// A type that can be used as a query subject can implement
+/// this trait. Implementing this trait makes it easy to register an handler
+/// and to dispatch the query.
 #[async_trait::async_trait]
 pub trait DispatchableQuery: Send + Sync {
+    /// Dispatch the query event
     async fn dispatch_query(self) -> Option<DispatchedQuery>
     where
         Self: Sized + 'static,
@@ -15,6 +19,7 @@ pub trait DispatchableQuery: Send + Sync {
         Busstop::instance().dispatch_query(self).await
     }
 
+    /// Register a handler for for this query
     async fn query_handler<H: QueryHandler + Default + 'static>()
     where
         Self: Sized,
@@ -35,12 +40,17 @@ pub trait DispatchableQuery: Send + Sync {
         }
     }
 
+    /// Register the current handler instance as the handler of this
+    /// query
     async fn register_query_handler<H: QueryHandler + 'static>(handler: H)
     where
         Self: Sized,
     {
         Busstop::instance().register_query::<Self>(handler).await;
     }
+
+    /// Register the current handler instance as the soft handler of this
+    /// query
     async fn register_soft_query_handler<H: QueryHandler + 'static>(handler: H)
     where
         Self: Sized,

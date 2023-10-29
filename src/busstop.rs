@@ -17,6 +17,9 @@ pub struct Busstop {
 }
 
 impl Busstop {
+    /// Returns the current instance of the bus
+    /// A new instance will be created if one does not exist
+    /// You can call this method as many times as you like
     pub fn instance() -> Arc<Self> {
         BUSSTOP_CMD_QUERY
             .get_or_init(|| {
@@ -28,6 +31,7 @@ impl Busstop {
             .clone()
     }
 
+    /// Register an handler for a command
     pub async fn register_command<C>(&self, handler: impl CommandHandler + 'static) -> &Self {
         let name = std::any::type_name::<C>().to_string();
         let mut lock = self.commands.write().await;
@@ -39,6 +43,7 @@ impl Busstop {
         self
     }
 
+    /// Checks if a command has a register handler
     pub async fn command_has_handler<C>(&self) -> bool {
         let name = std::any::type_name::<C>().to_string();
         let lock = self.commands.read().await;
@@ -46,6 +51,7 @@ impl Busstop {
         lock.contains_key(&name)
     }
 
+    /// Register an handler for a command
     pub async fn register_query<T>(&self, handler: impl QueryHandler + 'static) -> &Self {
         let name = std::any::type_name::<T>().to_string();
         let mut lock = self.queries.write().await;
@@ -57,6 +63,7 @@ impl Busstop {
         self
     }
 
+    /// Checks if a query has a registered handler
     pub async fn query_has_handler<Q>(&self) -> bool {
         let name = std::any::type_name::<Q>().to_string();
         let lock = self.queries.read().await;
@@ -64,6 +71,7 @@ impl Busstop {
         lock.contains_key(&name)
     }
 
+    /// Dispatches a command event
     pub async fn dispatch_command<T: Send + Sync + 'static>(&self, command: T) {
         let name = std::any::type_name::<T>().to_string();
 
@@ -81,6 +89,7 @@ impl Busstop {
         }
     }
 
+    /// Dispatches a query event
     pub async fn dispatch_query<Q: Send + Sync + 'static>(
         &self,
         query: Q,

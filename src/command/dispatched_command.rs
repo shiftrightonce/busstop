@@ -8,6 +8,7 @@ impl DispatchedCommand {
         Self(inner)
     }
 
+    /// Returns the inner (the real command) of the dispatched command
     pub fn the_command<T: 'static>(&self) -> Option<&T> {
         self.0.downcast_ref()
     }

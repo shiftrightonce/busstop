@@ -14,7 +14,7 @@ async fn main() {
     CreateUser::soft_command_handler::<SecondCreateUserHandler>().await;
 
     let cmd = CreateUser {
-        email: "Hello".to_string(),
+        email: "hello@example.com".to_string(),
     };
 
     cmd.dispatch_command().await;
