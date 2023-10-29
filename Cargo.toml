@@ -2,6 +2,11 @@
 name = "busstop"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/shiftrightonce/busstop"
+keywords = ["webdev", "web", "bus", "command bus", "query bus", "service"]
+categories = ["asynchronous", "web-programming"]
+license = "MIT"
+description = "A command and query bus"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
