@@ -4,7 +4,7 @@ use super::dispatched_command::DispatchedCommand;
 #[async_trait::async_trait]
 pub trait CommandHandler: Send + Sync {
     /// This method is call to handle the dispatched command
-    async fn handle_command(&self, command: DispatchedCommand);
+    async fn handle_command(&self, command: DispatchedCommand) -> DispatchedCommand;
 
     /// A unique name for this handler
     /// By default, the path to the type is used
