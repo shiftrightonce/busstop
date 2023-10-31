@@ -18,9 +18,7 @@ async fn main() {
     let query = TheSmallestQuery(500, 500);
     let result = query.dispatch_query().await;
 
-    if let Some(query) = result {
-        println!("ans1: {:?}", query.value::<String>());
-    }
+    println!("ans1: {:?}", result.value::<String>());
 }
 
 #[derive(Debug)]

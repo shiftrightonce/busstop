@@ -44,10 +44,12 @@ struct CreateUserHandler;
 // 7. Implement the "CommandHandler" trait for this handler
 #[busstop::async_trait]
 impl CommandHandler for CreateUserHandler {
-    async fn handle_command(&self, dc: busstop::DispatchedCommand) {
+    async fn handle_command(&self, dc: busstop::DispatchedCommand) -> busstop::DispatchedCommand {
         let command = dc.the_command::<CreateUser>();
 
         println!("handling 'create user' : {:?}", command.unwrap().email);
+
+        dc
     }
 }
 

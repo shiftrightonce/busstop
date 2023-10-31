@@ -18,9 +18,7 @@ async fn main() {
     let result = query.dispatch_query().await;
 
     // 4. Use the returned value
-    if let Some(d) = result {
-        println!("Answer returned: {:#?}", d.value::<i32>());
-    }
+    println!("Answer returned: {:#?}", result.value::<i32>());
 }
 
 // 5. Create a Query Struct

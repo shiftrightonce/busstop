@@ -1,4 +1,4 @@
-use busstop::{CommandHandler, DispatchableCommand};
+use busstop::{CommandHandler, DispatchableCommand, DispatchedCommand};
 use simple_logger::SimpleLogger;
 
 #[tokio::main]
@@ -16,7 +16,7 @@ async fn main() {
             email: "example@example.com".to_string(),
         };
 
-        cmd.dispatch_command().await;
+        _ = cmd.dispatch_command().await;
     });
 
     _ = t2.join().unwrap().await;
@@ -34,9 +34,11 @@ struct CreateUserHandler;
 
 #[busstop::async_trait]
 impl CommandHandler for CreateUserHandler {
-    async fn handle_command(&self, dc: busstop::DispatchedCommand) {
+    async fn handle_command(&self, dc: busstop::DispatchedCommand) -> DispatchedCommand {
         let command = dc.the_command::<CreateUser>();
 
         println!("handling create user: {:?}", command.unwrap().email);
+
+        dc
     }
 }

@@ -25,9 +25,11 @@
 //!
 //! #[busstop::async_trait]
 //! impl CommandHandler for CreateUserHandler {
-//!    async fn handle_command(&self, dc: busstop::DispatchedCommand) {
+//!    async fn handle_command(&self, dc: busstop::DispatchedCommand) -> busstop::DispatchedCommand {
 //!         let command = dc.the_command::<CreateUser>();
-//!         println!("User with email'{:?}' was created", &command.unwrap().email)
+//!         println!("User with email'{:?}' was created", &command.unwrap().email);
+//!
+//!        dc
 //!    }
 //! }
 //!
@@ -41,9 +43,7 @@
 //!   let query = SumOfQuery { numbers: vec![6,7,8], };
 //!   let result = query.dispatch_query().await;
 //!
-//!   if let Some(d) = result {
-//!      println!("Ans: {:#?}", d.value::<i32>());
-//!   }
+//!      println!("Ans: {:#?}", result.value::<i32>());
 //! }
 //!
 //! #[derive(Debug)]

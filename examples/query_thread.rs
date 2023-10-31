@@ -16,9 +16,7 @@ async fn main() {
 
         let result = query.dispatch_query().await;
 
-        if let Some(query) = result {
-            println!("ans1: {:?}", query.value::<String>());
-        }
+        println!("ans1: {:?}", result.value::<String>());
     });
 
     // 3. Spawn thread two and dispatch a query
@@ -27,9 +25,7 @@ async fn main() {
 
         let result = query.dispatch_query().await;
 
-        if let Some(query) = result {
-            println!("ans2: {:?}", query.value::<String>());
-        }
+        println!("ans2: {:?}", result.value::<String>());
     });
 
     // join threads
