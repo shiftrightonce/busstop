@@ -4,6 +4,7 @@ use std::{any::Any, cell::OnceCell};
 pub struct DispatchedQuery {
     query: Box<dyn Any + Send + Sync>,
     value: OnceCell<Box<dyn Any + Send + Sync>>,
+    pub(crate) handled: bool,
 }
 
 impl DispatchedQuery {
@@ -11,6 +12,7 @@ impl DispatchedQuery {
         Self {
             query,
             value: OnceCell::new(),
+            handled: false,
         }
     }
 
@@ -27,5 +29,9 @@ impl DispatchedQuery {
     /// Returns the value set by the handler of the query
     pub fn value<T: 'static>(&self) -> Option<&T> {
         self.value.get().unwrap().downcast_ref()
+    }
+
+    pub fn handled(&self) -> bool {
+        self.handled
     }
 }
