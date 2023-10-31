@@ -72,43 +72,45 @@ impl Busstop {
     }
 
     /// Dispatches a command event
-    pub async fn dispatch_command<T: Send + Sync + 'static>(&self, command: T) {
+    pub async fn dispatch_command<T: Send + Sync + 'static>(
+        &self,
+        command: T,
+    ) -> DispatchedCommand {
         let name = std::any::type_name::<T>().to_string();
 
         log::debug!(target: LOG_TARGET, "dispatching command: {:?}", &name);
+        let dispatched_command = DispatchedCommand::new(Box::new(command));
 
         let lock = self.commands.read().await;
         if let Some(handler) = lock.get(&name) {
-            handler
-                .handle_command(DispatchedCommand::new(Box::new(command)))
-                .await;
+            let mut result = handler.handle_command(dispatched_command).await;
+            result.handled = true;
 
             log::debug!(target: LOG_TARGET, "command: {:?} was handled by: {:?}", &name, handler.command_handler_name());
+            result
         } else {
             log::debug!(target: LOG_TARGET, "command: {:?} was not handled", &name);
+            dispatched_command
         }
     }
 
     /// Dispatches a query event
-    pub async fn dispatch_query<Q: Send + Sync + 'static>(
-        &self,
-        query: Q,
-    ) -> Option<DispatchedQuery> {
+    pub async fn dispatch_query<Q: Send + Sync + 'static>(&self, query: Q) -> DispatchedQuery {
         let name = std::any::type_name::<Q>().to_string();
 
         log::debug!(target: LOG_TARGET, "dispatching query: {:?}", &name);
+        let dispatched_query = DispatchedQuery::new(Box::new(query));
 
         let lock = self.queries.read().await;
         if let Some(handler) = lock.get(&name) {
-            let result = handler
-                .handle_query(DispatchedQuery::new(Box::new(query)))
-                .await;
+            let mut result = handler.handle_query(dispatched_query).await;
+            result.handled = true;
 
             log::debug!(target: LOG_TARGET, "query: {:?} was handled by: {:?}", &name, handler.query_handler_name());
-            Some(result)
+            result
         } else {
             log::debug!(target: LOG_TARGET, "query: {:?} was not handled", &name);
-            None
+            dispatched_query
         }
     }
 }

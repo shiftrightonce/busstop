@@ -12,7 +12,7 @@ use crate::Busstop;
 #[async_trait::async_trait]
 pub trait DispatchableQuery: Send + Sync {
     /// Dispatch the query event
-    async fn dispatch_query(self) -> Option<DispatchedQuery>
+    async fn dispatch_query(self) -> DispatchedQuery
     where
         Self: Sized + 'static,
     {
