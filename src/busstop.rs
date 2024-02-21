@@ -72,10 +72,7 @@ impl Busstop {
     }
 
     /// Dispatches a command event
-    pub async fn dispatch_command<T: Send + Sync + 'static>(
-        &self,
-        command: T,
-    ) -> DispatchedCommand {
+    pub async fn dispatch_command<T: Send + Sync + 'static>(&self, command: T) -> bool {
         let name = std::any::type_name::<T>().to_string();
 
         log::debug!(target: LOG_TARGET, "dispatching command: {:?}", &name);
@@ -87,10 +84,10 @@ impl Busstop {
             result.handled = true;
 
             log::debug!(target: LOG_TARGET, "command: {:?} was handled by: {:?}", &name, handler.command_handler_name());
-            result
+            result.handled
         } else {
             log::debug!(target: LOG_TARGET, "command: {:?} was not handled", &name);
-            dispatched_command
+            dispatched_command.handled
         }
     }
 

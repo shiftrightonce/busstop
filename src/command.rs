@@ -12,11 +12,11 @@ use crate::Busstop;
 #[async_trait::async_trait]
 pub trait DispatchableCommand: Send + Sync {
     /// Dispatch the command
-    async fn dispatch_command(self)
+    async fn dispatch_command(self) -> bool
     where
         Self: Sized + 'static,
     {
-        Busstop::instance().dispatch_command(self).await;
+        Busstop::instance().dispatch_command(self).await
     }
 
     /// Register this handler for this command
