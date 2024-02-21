@@ -4,7 +4,7 @@ use super::DispatchedQuery;
 #[async_trait::async_trait]
 pub trait QueryHandler: Send + Sync {
     /// This method is call to handle the dispatched query
-    async fn handle_query(&self, command: DispatchedQuery) -> DispatchedQuery;
+    async fn handle_query(&self, dispatched: DispatchedQuery) -> DispatchedQuery;
 
     /// A unique name for this handler
     /// By default, the path to the type is used
