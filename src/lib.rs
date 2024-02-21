@@ -91,3 +91,188 @@ pub use command::DispatchedCommand;
 pub use query::DispatchableQuery;
 pub use query::DispatchedQuery;
 pub use query::QueryHandler;
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_command_without_handler() {
+        struct FooCommand;
+        #[async_trait::async_trait]
+        impl DispatchableCommand for FooCommand {}
+
+        let handled = FooCommand.dispatch_command().await;
+        assert_eq!(handled, false);
+    }
+
+    #[tokio::test]
+    async fn test_command_with_handler() {
+        struct FooCommand;
+        #[async_trait::async_trait]
+        impl DispatchableCommand for FooCommand {}
+
+        struct FooCommandHandler;
+        #[async_trait::async_trait]
+        impl CommandHandler for FooCommandHandler {
+            async fn handle_command(&self, dispatched: DispatchedCommand) -> DispatchedCommand {
+                dispatched
+            }
+        }
+
+        FooCommand::register_command_handler(FooCommandHandler).await;
+
+        let handled = FooCommand.dispatch_command().await;
+        assert_eq!(handled, true);
+    }
+
+    #[tokio::test]
+    async fn test_get_command_ref() {
+        struct BroadcastCommand {
+            message: String,
+        }
+        #[async_trait::async_trait]
+        impl DispatchableCommand for BroadcastCommand {}
+
+        #[derive(Debug, Default)]
+        struct BroadcastCommandHandler;
+        #[async_trait::async_trait]
+        impl CommandHandler for BroadcastCommandHandler {
+            async fn handle_command(&self, dispatched: DispatchedCommand) -> DispatchedCommand {
+                let command = dispatched.the_command::<BroadcastCommand>();
+
+                assert_eq!(
+                    command.is_some(),
+                    true,
+                    "Could not get the dispatched command"
+                );
+                assert_eq!(command.as_ref().unwrap().message, "--test--");
+                dispatched
+            }
+        }
+
+        BroadcastCommand::command_handler::<BroadcastCommandHandler>().await;
+        BroadcastCommand {
+            message: String::from("--test--"),
+        }
+        .dispatch_command()
+        .await;
+    }
+
+    #[tokio::test]
+    async fn test_get_command_mut_ref() {
+        struct BroadcastCommand {
+            message: String,
+            attempts: i32,
+        }
+        #[async_trait::async_trait]
+        impl DispatchableCommand for BroadcastCommand {}
+
+        #[derive(Debug, Default)]
+        struct BroadcastCommandHandler;
+        #[async_trait::async_trait]
+        impl CommandHandler for BroadcastCommandHandler {
+            async fn handle_command(&self, mut dispatched: DispatchedCommand) -> DispatchedCommand {
+                let command = dispatched.the_command_mut::<BroadcastCommand>();
+
+                assert_eq!(
+                    command.is_some(),
+                    true,
+                    "Could not get the dispatched command"
+                );
+                assert_eq!(command.as_ref().unwrap().message, "--test--");
+
+                if let Some(inner) = command {
+                    inner.attempts = 10;
+                    assert_eq!(inner.attempts, 10);
+                }
+
+                dispatched
+            }
+        }
+
+        BroadcastCommand::command_handler::<BroadcastCommandHandler>().await;
+        BroadcastCommand {
+            message: String::from("--test--"),
+            attempts: 0,
+        }
+        .dispatch_command()
+        .await;
+    }
+
+    #[tokio::test]
+    async fn test_take_command() {
+        struct BroadcastCommand {
+            message: String,
+            attempts: i32,
+        }
+        #[async_trait::async_trait]
+        impl DispatchableCommand for BroadcastCommand {}
+
+        #[derive(Debug, Default)]
+        struct BroadcastCommandHandler;
+        #[async_trait::async_trait]
+        impl CommandHandler for BroadcastCommandHandler {
+            async fn handle_command(&self, mut dispatched: DispatchedCommand) -> DispatchedCommand {
+                let command = dispatched.take_command::<BroadcastCommand>();
+
+                assert_eq!(
+                    command.is_some(),
+                    true,
+                    "Could not get the dispatched command"
+                );
+                assert_eq!(command.as_ref().unwrap().message, "--test--");
+
+                if let Some(mut inner) = command {
+                    inner.attempts = 10;
+                    assert_eq!(inner.attempts, 10);
+                }
+
+                let command = dispatched.take_command::<BroadcastCommand>();
+                assert_eq!(command.is_none(), true, "Expect none");
+
+                dispatched
+            }
+        }
+
+        BroadcastCommand::command_handler::<BroadcastCommandHandler>().await;
+        BroadcastCommand {
+            message: String::from("--test--"),
+            attempts: 0,
+        }
+        .dispatch_command()
+        .await;
+    }
+
+    #[tokio::test]
+    async fn test_query_without_handler() {
+        struct NextIdQuery;
+        #[async_trait::async_trait]
+        impl DispatchableQuery for NextIdQuery {}
+
+        let dispatched = NextIdQuery.dispatch_query().await;
+
+        assert_eq!(dispatched.handled(), false);
+    }
+
+    #[tokio::test]
+    async fn test_query_handler() {
+        struct NextIdQuery;
+        #[async_trait::async_trait]
+        impl DispatchableQuery for NextIdQuery {}
+
+        struct NextIdQueryHandler;
+        #[async_trait::async_trait]
+        impl QueryHandler for NextIdQueryHandler {
+            async fn handle_query(&self, dispatched: DispatchedQuery) -> DispatchedQuery {
+                dispatched
+            }
+        }
+
+        NextIdQuery::register_query_handler(NextIdQueryHandler).await;
+
+        let dispatched = NextIdQuery.dispatch_query().await;
+
+        assert_eq!(dispatched.handled(), true);
+    }
+}
