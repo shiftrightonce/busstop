@@ -1,16 +1,20 @@
 use std::any::Any;
 
+use crate::DispatchableCommand;
+
 #[derive(Debug)]
 pub struct DispatchedCommand {
     inner: Option<Box<dyn Any + Send + Sync>>,
     pub(crate) handled: bool,
+    name: String,
 }
 
 impl DispatchedCommand {
-    pub(crate) fn new(inner: Box<dyn Any + Send + Sync>) -> Self {
+    pub(crate) fn new(inner: Box<dyn Any + Send + Sync>, name: &str) -> Self {
         Self {
             inner: Some(inner),
             handled: false,
+            name: name.to_string(),
         }
     }
 
@@ -44,5 +48,21 @@ impl DispatchedCommand {
     /// Returns true if the command was handled
     pub fn handled(&self) -> bool {
         self.handled
+    }
+
+    /// The type name of the dispatched command
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+
+    /// Compares the dispatched type with "C"
+    pub fn is<C>(&self) -> bool {
+        std::any::type_name::<C>() == self.name()
+    }
+}
+
+impl<H: DispatchableCommand + 'static> From<H> for DispatchedCommand {
+    fn from(value: H) -> Self {
+        Self::new(Box::new(value), std::any::type_name::<H>())
     }
 }
