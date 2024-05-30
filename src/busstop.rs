@@ -104,6 +104,11 @@ impl Busstop {
     pub async fn register_command<C>(&self, handler: impl CommandHandler + 'static) -> &Self {
         let name = std::any::type_name::<C>().to_string();
 
+        if self.command_has_handler::<C>().await {
+            log::error!(target: LOG_TARGET ,"There is already a registered handler for {} ", &name);
+            panic!("There is already a registered handler for {} ", &name);
+        }
+
         let manager = CommandHandlerManager::new(handler);
 
         let mut lock = self.command_middlewares.write().await;
@@ -132,6 +137,11 @@ impl Busstop {
     /// Register an handler for a command
     pub async fn register_query<T>(&self, handler: impl QueryHandler + 'static) -> &Self {
         let name = std::any::type_name::<T>().to_string();
+
+        if self.query_has_handler::<T>().await {
+            log::error!(target: LOG_TARGET,"There is already a registered handler for {} ", &name);
+            panic!("There is already a registered handler for {} ", &name);
+        }
 
         log::debug!(target: LOG_TARGET, "registered query handler {:?} for  {:?}", handler.query_handler_name(), &name);
 
