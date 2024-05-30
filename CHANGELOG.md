@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2024-05-30
+
+### Bug Fixes
+
+- Panic when there is an existing entry for a command or query
+
 ## [0.2.2] - 2024-05-29
 
 ### Features
