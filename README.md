@@ -1,11 +1,12 @@
 # Busstop
 
 **Busstop is a command and query bus crate**
+
 ---
 
 <details>
 <summary>
-  Command example 
+  Command example
 </summary>
 
 ```rust
