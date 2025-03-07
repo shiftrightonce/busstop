@@ -12,13 +12,13 @@ description = "A command and query bus"
 
 [dependencies]
 async-trait = "0.1"
-log = "0.4"
+tracing = { version = "0.1", features = ["std"] }
 tokio = { version = "1", features = ["sync"] }
-simple-middleware = { version = "0.1" }
+simple-middleware = { version = "0.2" }
 futures = { version = "0.3" }
 
 
 [dev-dependencies]
 tokio = { version = "1.36", features = ["full"] }
-simple_logger = "5.0"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 rand = "0.9"
