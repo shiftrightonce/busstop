@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6] - 2025-03-07
+
+### Features
+
+- Update simple-middleware and include tracing
+- Update middleware calls to by fully async
+
+### Examples
+
+- Update examples
+
+## [0.2.5] - 2025-02-28
+
+### Features
+
+- Update edition to 2024
+
 ## [0.2.3] - 2024-05-30
 
 ### Bug Fixes
