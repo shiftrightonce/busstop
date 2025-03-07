@@ -1,10 +1,13 @@
 use busstop::{CommandHandler, CommandHandlerManager, DispatchableCommand, DispatchedCommand};
-use simple_logger::SimpleLogger;
+use tracing::Level;
 
 #[tokio::main]
 async fn main() {
     // For logging purposes
-    SimpleLogger::new().init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .try_init()
+        .expect("could not setup tracing");
 
     // This example is illustrating how you may test your middlewares for a particular
     // command.
@@ -12,24 +15,28 @@ async fn main() {
     // 1. Create an instance of the command handler manager
     //    The manager takes an instance of the command handler. Could be useful to test
     //    different handlers for the same command...
-    let manager = CommandHandlerManager::new(CreateUserHandler);
+    let manager = CommandHandlerManager::new(CreateUserHandler).await;
 
     // 2. Add one or more middlewares
     //    Only middleware registered directly on this manager will be
     //    called.
-    manager.next(|d, n| {
-        Box::pin(async move {
-            log::debug!("middleware 1");
-            n.call(d).await
+    manager
+        .next(|d, n| {
+            Box::pin(async move {
+                tracing::debug!("middleware 1");
+                n.call(d).await
+            })
         })
-    });
+        .await;
 
-    manager.next(|d, n| {
-        Box::pin(async move {
-            log::debug!("middleware 2");
-            n.call(d).await
+    manager
+        .next(|d, n| {
+            Box::pin(async move {
+                tracing::debug!("middleware 2");
+                n.call(d).await
+            })
         })
-    });
+        .await;
 
     // 3. Create an instance of the command
     let cmd = CreateUser {

@@ -1,10 +1,13 @@
 use busstop::{CommandHandler, DispatchableCommand, DispatchedCommand};
-use simple_logger::SimpleLogger;
+use tracing::Level;
 
 #[tokio::main]
 async fn main() {
     // For logging purposes
-    SimpleLogger::new().init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .try_init()
+        .expect("could not setup tracing");
 
     // 1. Registering a middleware
     //    Middlewares can be registered before or after a command handler is registered.
@@ -12,7 +15,7 @@ async fn main() {
     //    for the specified command.
     CreateUser::command_middleware(|p, n| {
         Box::pin(async move {
-            log::info!(target: "middleware", "|----> middleware 1 was called");
+            tracing::info!(target: "middleware", "|----> middleware 1 was called");
             n.call(p).await // calls the next middleware in the chain
         })
     })
@@ -21,9 +24,9 @@ async fn main() {
     // 2. A second middleware is added. This one uses a function
     CreateUser::command_middleware(|mut p, n| {
         Box::pin(async move {
-            log::info!(target: "middleware", "|----> middleware 2 was called");
+            tracing::info!(target: "middleware", "|----> middleware 2 was called");
             if let Some(user) = p.the_command_mut::<CreateUser>() {
-                log::warn!(target: "middleware 2", "New user email: {}", &user.email);
+                tracing::warn!(target: "middleware 2", "New user email: {}", &user.email);
                 user.email = sanitize_email(&user.email);
             }
             n.call(p).await

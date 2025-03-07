@@ -1,10 +1,13 @@
 use busstop::DispatchableQuery;
-use simple_logger::SimpleLogger;
+use tracing::Level;
 
 #[tokio::main]
 async fn main() {
     // For logging purposes
-    SimpleLogger::new().init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .try_init()
+        .expect("could not setup tracing");
 
     // 1. Randomly register the main handler for the query
     if rand::random() {

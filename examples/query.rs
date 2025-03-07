@@ -1,10 +1,13 @@
 use busstop::{DispatchableQuery, DispatchedQuery, QueryHandler};
-use simple_logger::SimpleLogger;
+use tracing::Level;
 
 #[tokio::main]
 async fn main() {
     // For logging purposes
-    SimpleLogger::new().init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .try_init()
+        .expect("could not setup tracing");
 
     // 1. Register query handler
     SumOfQuery::query_handler::<HandleSumOfQuery>().await;
@@ -42,7 +45,7 @@ impl QueryHandler for HandleSumOfQuery {
         let query = dq.the_query::<SumOfQuery>();
 
         let sum = if let Some(subject) = query {
-            log::info!("summing up: {:?}", subject.numbers);
+            tracing::info!("summing up: {:?}", subject.numbers);
             subject.numbers.iter().fold(0, |sum, n| sum + n)
         } else {
             0

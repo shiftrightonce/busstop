@@ -1,10 +1,13 @@
 use busstop::{DispatchableQuery, DispatchedQuery, QueryHandler};
-use simple_logger::SimpleLogger;
+use tracing::Level;
 
 #[tokio::main]
 async fn main() {
     // For logging purposes
-    SimpleLogger::new().init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .try_init()
+        .expect("could not setup tracing");
 
     // 1. Like command middleware, we can add query middleware before or after the
     //    query handler is register. The middlewares are only executed when there is a
