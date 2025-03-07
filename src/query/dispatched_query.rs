@@ -52,7 +52,7 @@ impl DispatchedQuery {
     pub fn set_value<V: Send + Sync + 'static>(&self, value: V) {
         let x = std::any::type_name::<V>();
         if self.value.set((Box::new(value), x.to_string())).is_err() {
-            log::error!(target: "dispatched query", "value can only be set once. Query: {}", &self.name);
+            tracing::error!(target: "dispatched query", "value can only be set once. Query: {}", &self.name);
         }
     }
 

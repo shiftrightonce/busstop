@@ -98,14 +98,15 @@ pub struct CommandHandlerManager {
 
 impl CommandHandlerManager {
     /// Create a new instance
-    pub fn new(handler: impl CommandHandler + 'static) -> Self {
+    pub async fn new(handler: impl CommandHandler + 'static) -> Self {
         let handler = Arc::new(Box::new(handler));
         Self {
             name: handler.command_handler_name().to_string(),
             middleware: MiddlewareManager::last(move |dispatched, _| {
                 let instance = handler.clone();
                 Box::pin(async move { instance.clone().handle_command(dispatched).await })
-            }),
+            })
+            .await,
         }
     }
 
@@ -114,13 +115,13 @@ impl CommandHandlerManager {
         &self.name
     }
 
-    pub fn next<M>(&self, middleware: M) -> &Self
+    pub async fn next<M>(&self, middleware: M) -> &Self
     where
         M: FnMut(DispatchedCommand, NextCommandMiddleware) -> BoxFuture<'static, DispatchedCommand>
             + Send
             + 'static,
     {
-        self.middleware.next(middleware);
+        self.middleware.next(middleware).await;
         self
     }
 
@@ -159,10 +160,14 @@ mod test {
 
     #[tokio::test]
     async fn test_command_handler_manager() {
-        let manager = CommandHandlerManager::new(CmdHandler);
+        let manager = CommandHandlerManager::new(CmdHandler).await;
 
-        manager.next(|c, n| Box::pin(async move { n.call(c).await }));
-        manager.next(|c, n| Box::pin(async move { n.call(c).await }));
+        manager
+            .next(|c, n| Box::pin(async move { n.call(c).await }))
+            .await;
+        manager
+            .next(|c, n| Box::pin(async move { n.call(c).await }))
+            .await;
 
         assert_eq!(manager.handle_command(Cmd).await.handled(), true)
     }

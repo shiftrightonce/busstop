@@ -62,7 +62,7 @@
 //!      let query = dispatched.the_query::<SumOfQuery>();
 //!
 //!        let sum = if let Some(subject) = query {
-//!            log::info!("summing up: {:?}", subject.numbers);
+//!            tracing::info!("summing up: {:?}", subject.numbers);
 //!            subject.numbers.iter().fold(0, |sum, n| sum + n)
 //!        } else {
 //!            0

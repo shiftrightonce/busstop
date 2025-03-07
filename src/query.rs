@@ -95,14 +95,15 @@ pub struct QueryHandlerManager {
 
 impl QueryHandlerManager {
     /// Creates a new instance
-    pub fn new(handler: impl QueryHandler + 'static) -> Self {
+    pub async fn new(handler: impl QueryHandler + 'static) -> Self {
         let handler = Arc::new(Box::new(handler));
         Self {
             name: handler.query_handler_name().to_string(),
             middleware: MiddlewareManager::last(move |dispatched, _| {
                 let instance = handler.clone();
                 Box::pin(async move { instance.clone().handle_query(dispatched).await })
-            }),
+            })
+            .await,
         }
     }
 
@@ -112,13 +113,13 @@ impl QueryHandlerManager {
     }
 
     /// Register the next middleware
-    pub fn next<M>(&self, middleware: M) -> &Self
+    pub async fn next<M>(&self, middleware: M) -> &Self
     where
         M: FnMut(DispatchedQuery, NextQueryMiddleware) -> BoxFuture<'static, DispatchedQuery>
             + Send
             + 'static,
     {
-        self.middleware.next(middleware);
+        self.middleware.next(middleware).await;
         self
     }
 
@@ -161,25 +162,29 @@ mod test {
 
     #[tokio::test]
     async fn test_query_handler_manager() {
-        let manager = QueryHandlerManager::new(QCommandHandler);
+        let manager = QueryHandlerManager::new(QCommandHandler).await;
 
-        manager.next(|mut q, n| {
-            Box::pin(async move {
-                if let Some::<&mut i32>(query) = q.the_query_mut() {
-                    *query += 2;
-                }
-                n.call(q).await
+        manager
+            .next(|mut q, n| {
+                Box::pin(async move {
+                    if let Some::<&mut i32>(query) = q.the_query_mut() {
+                        *query += 2;
+                    }
+                    n.call(q).await
+                })
             })
-        });
+            .await;
 
-        manager.next(|mut q, n| {
-            Box::pin(async move {
-                if let Some::<&mut i32>(query) = q.the_query_mut() {
-                    *query *= 2
-                }
-                n.call(q).await
+        manager
+            .next(|mut q, n| {
+                Box::pin(async move {
+                    if let Some::<&mut i32>(query) = q.the_query_mut() {
+                        *query *= 2
+                    }
+                    n.call(q).await
+                })
             })
-        });
+            .await;
 
         let ans = manager.handle_query(10).await.take_value::<i32>().unwrap();
 
